@@ -251,10 +251,7 @@ export async function updateCommunity(
   }
 }
 
-export async function deleteCommunity(
-  communityId: string,
-  userAdminId: string
-) {
+export async function deleteCommunity(communityId: string) {
   try {
     connectToDatabase();
 
@@ -265,10 +262,10 @@ export async function deleteCommunity(
       throw new Error("Community not found");
     }
 
-    // Check the user is admin or not
-    if (community.createdBy !== userAdminId) {
-      throw new Error("You are not authorized to delete community");
-    }
+    // // Check the user is admin or not
+    // if (community.createdBy !== userAdminId) {
+    //   throw new Error("You are not authorized to delete community");
+    // }
 
     // Delete the community
     const deleCommunity = await Community.findOneAndDelete({
