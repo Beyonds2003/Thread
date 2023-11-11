@@ -154,7 +154,6 @@ export async function addMemberToCommunity(
     connectToDatabase();
 
     // find the community that want to add
-    console.log("Check me", communityId, memberId);
     const community = await Community.findOne({ id: communityId });
 
     if (!community) {
@@ -236,7 +235,6 @@ export async function updateCommunity(
   try {
     connectToDatabase();
 
-    console.log("Check me update", communityId);
     // Find the community and update
     const community = await Community.findOneAndUpdate(
       { id: communityId },
@@ -256,8 +254,6 @@ export async function updateCommunity(
 export async function deleteCommunity(communityId: string) {
   try {
     connectToDatabase();
-
-    console.log("Check me delete", communityId);
 
     // find the community that want to delete
     const community = await Community.findOne({ id: communityId });
