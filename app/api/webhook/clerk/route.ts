@@ -44,13 +44,9 @@ export const POST = async (request: Request) => {
     "svix-signature": header.get("svix-signature"),
   };
 
-  console.log(payload, "from api server");
-
   // Activitate Webhook in the Clerk Dashboard.
   // After adding the endpoint, you'll see the secret on the right side.
   const wh = new Webhook(process.env.NEXT_CLERK_WEBHOOK_SECRET || "");
-
-  console.log(wh, "from api server connect");
 
   let evnt: Event | null = null;
 

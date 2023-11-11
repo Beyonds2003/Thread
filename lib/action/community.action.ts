@@ -154,6 +154,7 @@ export async function addMemberToCommunity(
     connectToDatabase();
 
     // find the community that want to add
+    console.log("Check me", communityId, memberId);
     const community = await Community.findOne({ id: communityId });
 
     if (!community) {
