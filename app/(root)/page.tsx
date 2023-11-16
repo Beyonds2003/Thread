@@ -1,7 +1,8 @@
 import ThreadCard from "@/components/card/ThreadCard";
 import { fetchThread } from "@/lib/action/thread.action";
 import { currentUser } from "@clerk/nextjs";
-import Image from "next/image";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const results = await fetchThread(1, 20);
