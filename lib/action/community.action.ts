@@ -17,8 +17,6 @@ export async function createCommunity(
   try {
     connectToDatabase();
 
-    console.log("Check me create member", Community);
-
     // Find the user that want to create community
     const user = await User.findOne({ id: createdBy });
 
@@ -155,7 +153,9 @@ export async function addMemberToCommunity(
   try {
     connectToDatabase();
 
-    console.log("Check me add member", Community);
+    const test = await Community.find({});
+
+    console.log("Check me add member", test);
 
     // find the community that want to add
     const community = await Community.findOne({ id: communityId });

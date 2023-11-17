@@ -118,7 +118,7 @@ export const POST = async (request: Request) => {
       // Resource: https://clerk.com/docs/reference/backend-api/tag/Organization-Memberships#operation/CreateOrganizationMembership
       // Show what evnt?.data sends from above resource
       const { organization, public_user_data, id } = evnt?.data;
-      console.log("created", evnt?.data);
+      console.log("member created", evnt?.data);
 
       // @ts-ignore
       await addMemberToCommunity(organization.id, public_user_data.user_id);
