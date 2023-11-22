@@ -33,10 +33,14 @@ const CommunityCard = ({ id, name, username, image, bio, members }: Props) => {
           <p className="text-small-medium text-gray-1">@{username}</p>
         </div>
       </div>
+
       <p className="mt-4 text-subtle-medium text-gray-1">{bio}</p>
-      <div>
+
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
         <Link href={`/communities/${id}`}>
-          <Button className="community-card_btn mt-4">View</Button>
+          <Button className="community-card_btn" size={"sm"}>
+            View
+          </Button>
         </Link>
         {members.length > 0 && (
           <div className="flex items-center">
@@ -45,11 +49,11 @@ const CommunityCard = ({ id, name, username, image, bio, members }: Props) => {
                 key={index}
                 src={member.image}
                 alt={`user_${index}`}
-                width={28}
-                height={28}
+                width={35}
+                height={35}
                 className={`${
                   index !== 0 && "-ml-2"
-                } rounded-full object-cover`}
+                } rounded-full object-cover h-[35px]`}
               />
             ))}
             {members.length > 3 && (

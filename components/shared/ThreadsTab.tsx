@@ -3,6 +3,37 @@ import { fetchUserThreads } from "@/lib/action/user.action";
 import { redirect } from "next/navigation";
 import React from "react";
 import ThreadCard from "../card/ThreadCard";
+import {
+  fetchCommunityDetail,
+  fetchCommunityPosts,
+} from "@/lib/action/community.action";
+
+interface Result {
+  name: string;
+  image: string;
+  id: string;
+  threads: {
+    _id: string;
+    text: string;
+    parentId: string | null;
+    author: {
+      name: string;
+      image: string;
+      id: string;
+    };
+    community: {
+      id: string;
+      name: string;
+      image: string;
+    } | null;
+    createdAt: string;
+    children: {
+      author: {
+        image: string;
+      };
+    }[];
+  }[];
+}
 
 interface Props {
   currentUserId: string;
@@ -11,7 +42,13 @@ interface Props {
 }
 
 const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
-  const results = await fetchUserThreads(accountId);
+  let results: Result;
+
+  if (accountType === "User") {
+    results = await fetchUserThreads(accountId);
+  } else {
+    results = await fetchCommunityPosts(accountId);
+  }
 
   if (!results) redirect("/");
 

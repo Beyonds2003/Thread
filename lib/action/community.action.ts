@@ -259,22 +259,16 @@ export async function deleteCommunity(communityId: string) {
   try {
     connectToDatabase();
 
-    // find the community that want to delete
-    const community = await Community.findOne({ id: communityId });
-
-    if (!community) {
-      throw new Error("Community not found");
-    }
-
-    // // Check the user is admin or not
-    // if (community.createdBy !== userAdminId) {
-    //   throw new Error("You are not authorized to delete community");
-    // }
+    console.log("Community Id: ", communityId);
 
     // Delete the community
     const deleCommunity = await Community.findOneAndDelete({
-      _id: community._id,
+      _id: communityId,
     });
+
+    if (!deleCommunity) {
+      throw new Error("Community not found");
+    }
 
     // Delete all thread associated with community
     await Thread.deleteMany({ community: communityId });

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import Thread from "../models/thread.model";
 import { User } from "../models/user.model";
 import { connectToDatabase } from "../mongoose";
+import { Community } from "../models/community.model";
 
 interface Params {
   text: string;
@@ -24,10 +25,12 @@ export async function createThread({
   connectToDatabase();
 
   try {
+    const communityObject = await Community.findOne({ id: communityId });
+
     const createThread = await Thread.create({
       text,
       author,
-      community: null,
+      community: communityObject,
       image,
     });
 
@@ -35,6 +38,13 @@ export async function createThread({
     await User.findByIdAndUpdate(author, {
       $push: { threads: createThread._id },
     });
+
+    //Update Community model
+    if (communityObject) {
+      await Community.findByIdAndUpdate(communityObject, {
+        $push: { threads: createThread._id },
+      });
+    }
 
     revalidatePath(path);
   } catch (error: any) {
@@ -59,8 +69,11 @@ export async function fetchThread(pageNumber = 1, pageSize = 20) {
           model: User,
           select: "_id name parentId image",
         },
+      })
+      .populate({
+        path: "community",
+        model: Community,
       });
-
     const totalThreadCount = await Thread.countDocuments({
       parentId: { $in: [null, undefined] },
     });
