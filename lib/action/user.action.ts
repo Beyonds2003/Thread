@@ -6,6 +6,7 @@ import Thread from "../models/thread.model";
 import { User } from "../models/user.model";
 import { connectToDatabase } from "../mongoose";
 import sharp from "sharp";
+import { Community } from "../models/community.model";
 
 type updateUserParams = {
   name: string;
@@ -75,9 +76,9 @@ export async function fetchUserThreads(userId: string) {
           },
         },
         {
-          path: "author",
-          model: User,
-          select: "_id id name parentId image",
+          path: "community",
+          model: Community,
+          select: "name id image _id", // Select the "name" and "_id" fields from the "Community" model
         },
       ],
     });

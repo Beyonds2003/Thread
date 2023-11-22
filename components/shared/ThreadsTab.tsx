@@ -50,6 +50,8 @@ const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
     results = await fetchCommunityPosts(accountId);
   }
 
+  console.log(results);
+
   if (!results) redirect("/");
 
   return (
@@ -70,7 +72,7 @@ const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
                   id: thread.author.id,
                 }
           }
-          community={thread.community}
+          community={results}
           createdAt={thread.createdAt}
           comments={thread.children}
           contentImage={thread.image || ""}
