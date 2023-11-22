@@ -270,6 +270,9 @@ export async function deleteCommunity(communityId: string) {
       throw new Error("Community not found");
     }
 
+    // Find the threads that need to delete
+    const threads = await Thread.find({ community: deleCommunity._id });
+
     // Delete all thread associated with community
     await Thread.deleteMany({ community: deleCommunity._id });
 
@@ -277,6 +280,9 @@ export async function deleteCommunity(communityId: string) {
     const users = await User.find({ communities: deleCommunity._id });
 
     const updateUserPromise = users.map((user) => {
+      for (let i = 0; i < threads.length; i++) {
+        user.threads.pull(threads[i]._id);
+      }
       user.communities.pull(deleCommunity._id);
       return user.save();
     });
