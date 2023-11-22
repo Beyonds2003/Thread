@@ -271,13 +271,13 @@ export async function deleteCommunity(communityId: string) {
     }
 
     // Delete all thread associated with community
-    await Thread.deleteMany({ community: communityId });
+    await Thread.deleteMany({ community: deleCommunity._id });
 
     // Find all user that associated with community
-    const users = await User.find({ communities: communityId });
+    const users = await User.find({ communities: deleCommunity._id });
 
     const updateUserPromise = users.map((user) => {
-      user.communities.pull(communityId);
+      user.communities.pull(deleCommunity._id);
       return user.save();
     });
 
