@@ -18,7 +18,11 @@ const CreateThread = async () => {
   return (
     <section>
       <span className="head-text">Create Thread</span>
-      <PostThread userId={userInfo._id} />
+      <PostThread
+        userId={userInfo._id}
+        userName={userInfo.name}
+        userImage={userInfo.image}
+      />
     </section>
   );
 };

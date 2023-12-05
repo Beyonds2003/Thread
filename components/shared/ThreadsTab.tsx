@@ -1,4 +1,3 @@
-import { fetchThread } from "@/lib/action/thread.action";
 import { fetchUserThreads } from "@/lib/action/user.action";
 import { redirect } from "next/navigation";
 import React from "react";
@@ -7,6 +6,7 @@ import {
   fetchCommunityDetail,
   fetchCommunityPosts,
 } from "@/lib/action/community.action";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 interface Result {
   name: string;
@@ -45,12 +45,12 @@ const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
   let results: Result;
 
   if (accountType === "User") {
+    // Fetch User Threads
     results = await fetchUserThreads(accountId);
   } else {
+    // Fetch Community Threads
     results = await fetchCommunityPosts(accountId);
   }
-
-  console.log(results);
 
   if (!results) redirect("/");
 
@@ -72,7 +72,7 @@ const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
                   id: thread.author.id,
                 }
           }
-          community={results}
+          community={thread.community}
           createdAt={thread.createdAt}
           comments={thread.children}
           contentImage={thread.image || ""}

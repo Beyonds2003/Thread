@@ -24,6 +24,7 @@ export async function createThread({
 }: Params) {
   connectToDatabase();
 
+  console.log("creating thread");
   try {
     const communityObject = await Community.findOne({ id: communityId });
 

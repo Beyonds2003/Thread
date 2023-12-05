@@ -4,42 +4,35 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { Textarea } from "../ui/textarea";
 import { useRouter, usePathname } from "next/navigation";
-import {
-  createThreadValidation,
-  threadValidation,
-} from "@/lib/validation/thread";
+import { createThreadValidation } from "@/lib/validation/thread";
 import { createThread } from "@/lib/action/thread.action";
 import Image from "next/image";
 import { isBase64Image } from "@/lib/utils";
 import { resizeThreadImage } from "@/lib/file_resizer";
 import { useUploadThing } from "@/lib/uploadthing";
 import { useOrganization } from "@clerk/nextjs";
+import { useQueryClient } from "@tanstack/react-query";
+import { randomUUID } from "crypto";
+import { pageType } from "@/lib/types/Types";
 
 interface Props {
-  user: {
-    id: string;
-    objectId: string;
-    username: string;
-    name: string;
-    bio: string;
-    image: string;
-  };
-  btnTitle: string;
+  userId: string;
+  userName: string;
+  userImage: string;
 }
 
-const PostThread = ({ userId }: { userId: string }) => {
+type oldResultType = { pages: pageType[]; pageParams: number[] };
+
+const PostThread = ({ userId, userName, userImage }: Props) => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -51,6 +44,8 @@ const PostThread = ({ userId }: { userId: string }) => {
   const [textareaHeight, setTextareaHeight] = React.useState("auto");
 
   const [postImage, setPostImage] = React.useState<File[]>([]);
+
+  const queryClient = useQueryClient();
 
   const handleUploadImage = (
     e: ChangeEvent<HTMLInputElement>,
@@ -84,34 +79,86 @@ const PostThread = ({ userId }: { userId: string }) => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof createThreadValidation>) => {
-    const blob = values.post_image;
+  const backgroundWork = async (
+    values: z.infer<typeof createThreadValidation>,
+    organizationId: string | null,
+    pathname: string
+  ) => {
+    try {
+      const blob = values.post_image;
+      const hasImageChange = isBase64Image(blob);
 
-    const hasImageChange = isBase64Image(blob);
+      let imageUrl = "";
 
-    if (hasImageChange) {
-      // Resize image to 1200 x 600
-      const resizeImage: any = await resizeThreadImage(postImage[0]);
+      // Check imagefield input change or not
+      if (hasImageChange) {
+        // Resize image to 1200 x 600
+        const resizeImage: any = await resizeThreadImage(postImage[0]);
 
-      // Upload image to uploadthing database
-      const imageRes = await startUpload([resizeImage]);
+        // Upload image to uploadthing database
+        const imageRes = await startUpload([resizeImage]);
 
-      if (imageRes && imageRes[0]?.fileUrl) {
-        values.post_image = imageRes[0].fileUrl;
+        if (imageRes && imageRes[0]?.fileUrl) {
+          imageUrl = imageRes[0]?.fileUrl;
+        }
       }
-    }
 
-    await createThread({
-      text: values.thread,
-      author: userId,
-      communityId: organization ? organization.id : null,
-      path: pathname,
-      image: values.post_image,
+      const res = await fetch("http://localhost:3000/api/createThread", {
+        method: "POST",
+        body: JSON.stringify({
+          text: values.thread,
+          author: userId,
+          communityId: organizationId,
+          path: pathname,
+          image: imageUrl,
+        }),
+      });
+      const data = await res.json();
+      queryClient.invalidateQueries({ queryKey: ["threads"] });
+    } catch (error: any) {
+      console.log(error.message);
+    }
+  };
+
+  const onSubmit = async (values: z.infer<typeof createThreadValidation>) => {
+    // Optimistic update
+    await queryClient.setQueryData(["threads"], (oldResult: oldResultType) => {
+      return {
+        pageParams: [1],
+        pages: [
+          {
+            threads: [
+              {
+                _id: randomUUID,
+                parentId: null,
+                text: values.thread,
+                author: { name: userName, image: userImage, id: userId },
+                community: organization
+                  ? {
+                      name: organization.name,
+                      image: organization.imageUrl,
+                      id: organization.id,
+                    }
+                  : null,
+                createdAt: new Date().toISOString().replace("Z", "+00:00"),
+                children: [],
+                image: values.post_image,
+              },
+              ...oldResult.pages[0].threads,
+            ],
+            isNext: oldResult.pages[0].isNext,
+          },
+        ],
+      };
     });
+
+    // Submiting form from background without blocking ui to get optimistic update
+    backgroundWork(values, organization ? organization.id : null, pathname);
 
     router.push("/");
   };
 
+  // Automatic adjust textarea height when uesr type
   const handleTextareaHeight = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const textarea = e.target;
     let numberOfChaInWidth = textarea.clientWidth / 12;

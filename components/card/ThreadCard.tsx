@@ -154,10 +154,7 @@ const ThreadCard = ({
       )}
 
       {!isComment && community && (
-        <Link
-          href={`/communities/${community.id}`}
-          className="mt-5 flex items-center"
-        >
+        <Link href={`/communities/${community.id}`} className="mt-5 flex ">
           <p className="text-subtle-medium text-gray-1">
             {formatDateString(createdAt)}
             {community && ` - ${community.name} Community`}
