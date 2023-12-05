@@ -6,7 +6,7 @@ import { InView } from "react-intersection-observer";
 import { pageType, threadType } from "@/lib/types/Types";
 
 const fetchThreads = async (pageNumber: number) => {
-  const res = await fetch("http://localhost:3000/api/threads", {
+  const res = await fetch("/api/threads", {
     method: "POST",
     body: JSON.stringify({ pageNumber: pageNumber, pageSize: 3 }),
   });

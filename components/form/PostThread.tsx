@@ -103,7 +103,7 @@ const PostThread = ({ userId, userName, userImage }: Props) => {
         }
       }
 
-      const res = await fetch("http://localhost:3000/api/createThread", {
+      const res = await fetch("/api/createThread", {
         method: "POST",
         body: JSON.stringify({
           text: values.thread,
