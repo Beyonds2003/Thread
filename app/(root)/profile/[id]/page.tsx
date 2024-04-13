@@ -2,7 +2,7 @@ import React from "react";
 import ProfileHeader from "@/components/shared/ProfileHeader";
 import { fetchUser } from "@/lib/action/user.action";
 import { currentUser } from "@clerk/nextjs";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { profileTabs } from "@/constants";
 import Image from "next/image";
@@ -13,7 +13,7 @@ const Profile = async ({ params }: { params: { id: string } }) => {
   if (!user) return null;
 
   const userInfo = await fetchUser({ userId: params.id });
-  if (!userInfo) return null;
+  if (!userInfo) return redirect('/onboarding');
 
   return (
     <section>

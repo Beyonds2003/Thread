@@ -20,6 +20,7 @@ interface Result {
       name: string;
       image: string;
       id: string;
+      _id: string
     };
     community: {
       id: string;
@@ -65,11 +66,12 @@ const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
           content={thread.text}
           author={
             accountType === "User"
-              ? { name: results.name, image: results.image, id: results.id }
+              ? { name: results.name, image: results.image, id: results.id, _id: accountId }
               : {
                   name: thread.author.name,
                   image: thread.author.image,
                   id: thread.author.id,
+                  _id: accountId
                 }
           }
           community={thread.community}

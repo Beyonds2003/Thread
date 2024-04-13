@@ -1,11 +1,11 @@
 "use server";
 
-import { AuthErrorReason } from "@clerk/backend/dist/types/tokens/authStatus";
 import { revalidatePath } from "next/cache";
 import Thread from "../models/thread.model";
 import { User } from "../models/user.model";
 import { connectToDatabase } from "../mongoose";
 import { Community } from "../models/community.model";
+import mongoose from "mongoose";
 
 interface Params {
   text: string;
@@ -24,9 +24,13 @@ export async function createThread({
 }: Params) {
   connectToDatabase();
 
-  console.log("creating thread");
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const communityObject = await Community.findOne({ id: communityId });
+    const communityObject = await Community.findOne({
+      id: communityId,
+    }).session(session);
 
     const createThread = await Thread.create({
       text,
@@ -38,18 +42,64 @@ export async function createThread({
     //Update User model
     await User.findByIdAndUpdate(author, {
       $push: { threads: createThread._id },
-    });
+    }).session(session);
 
     //Update Community model
     if (communityObject) {
       await Community.findByIdAndUpdate(communityObject, {
         $push: { threads: createThread._id },
-      });
+      }).session(session);
     }
+
+    await session.commitTransaction();
 
     revalidatePath(path);
   } catch (error: any) {
     throw new Error(`Fail to create thread ${error.message}`);
+  } finally {
+    session.endSession();
+  }
+}
+
+export async function deleteThread(
+  threadId: string,
+  author: string,
+  communityId: string | undefined,
+  path: string,
+) {
+  connectToDatabase();
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Find thread to delete
+    const thread = await Thread.findById(threadId).session(session);
+
+    if (!thread) {
+      throw new Error("Thread not found!!!");
+    }
+
+    // Delte Thred
+    await Thread.deleteOne({ _id: threadId, author }).session(session);
+
+    // Remove threadId from User model arry
+    await User.findByIdAndUpdate(author, {
+      $pull: { threads: threadId },
+    }).session(session);
+
+    // Remove threadId from Community model arry
+    if (communityId) {
+      await Community.findByIdAndUpdate(communityId, {
+        $pull: { threads: threadId },
+      }).session(session);
+    }
+
+    await session.commitTransaction();
+  } catch (error: any) {
+    throw new Error(`Fail to delete thread ${error.message}`);
+  } finally {
+    session.endSession();
   }
 }
 
@@ -128,7 +178,7 @@ export async function addCommentToThread(
   threadId: string,
   commentText: string,
   userId: string,
-  path: string
+  path: string,
 ) {
   connectToDatabase();
 

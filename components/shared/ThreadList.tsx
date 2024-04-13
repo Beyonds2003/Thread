@@ -1,9 +1,9 @@
 "use client";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
-import ThreadCard from "../card/ThreadCard";
 import { InView } from "react-intersection-observer";
 import { pageType, threadType } from "@/lib/types/Types";
+import ThreadCard from "../card/ThreadCard";
 
 const fetchThreads = async (pageNumber: number) => {
   const res = await fetch("/api/threads", {
@@ -14,13 +14,15 @@ const fetchThreads = async (pageNumber: number) => {
   return data;
 };
 
-const ThreadList = () => {
+const ThreadList = ({
+  currentUserId,
+}: {
+  currentUserId: string | undefined;
+}) => {
   // Fetching threads
   const {
     data: results,
     isLoading,
-    isError,
-    error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -50,7 +52,7 @@ const ThreadList = () => {
                     <ThreadCard
                       key={thread._id}
                       id={thread._id}
-                      currentUserId={""}
+                      currentUserId={currentUserId}
                       parentId={thread.parentId}
                       content={thread.text}
                       author={thread.author}
@@ -64,9 +66,10 @@ const ThreadList = () => {
               </div>
             );
           })}
+
           <InView
             as="div"
-            onChange={(inView, entry) => {
+            onChange={(inView) => {
               if (inView && hasNextPage) {
                 fetchNextPage();
               }

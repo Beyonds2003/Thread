@@ -49,7 +49,7 @@ const PostThread = ({ userId, userName, userImage }: Props) => {
 
   const handleUploadImage = (
     e: ChangeEvent<HTMLInputElement>,
-    fieldChange: (value: string) => void
+    fieldChange: (value: string) => void,
   ) => {
     let fileReader = new FileReader();
 
@@ -82,7 +82,7 @@ const PostThread = ({ userId, userName, userImage }: Props) => {
   const backgroundWork = async (
     values: z.infer<typeof createThreadValidation>,
     organizationId: string | null,
-    pathname: string
+    pathname: string,
   ) => {
     try {
       const blob = values.post_image;
@@ -135,10 +135,10 @@ const PostThread = ({ userId, userName, userImage }: Props) => {
                 author: { name: userName, image: userImage, id: userId },
                 community: organization
                   ? {
-                      name: organization.name,
-                      image: organization.imageUrl,
-                      id: organization.id,
-                    }
+                    name: organization.name,
+                    image: organization.imageUrl,
+                    id: organization.id,
+                  }
                   : null,
                 createdAt: new Date().toISOString().replace("Z", "+00:00"),
                 children: [],
@@ -146,7 +146,7 @@ const PostThread = ({ userId, userName, userImage }: Props) => {
               },
               ...oldResult.pages[0].threads,
             ],
-            isNext: oldResult.pages[0].isNext,
+            isNext: oldResult.pages[0].threads,
           },
         ],
       };
@@ -202,9 +202,8 @@ const PostThread = ({ userId, userName, userImage }: Props) => {
                 <FormLabel></FormLabel>
                 <FormControl>
                   <div
-                    className={`${
-                      postImage.length > 0 ? "h-[80%]" : "h-[200px]"
-                    }   relative`}
+                    className={`${postImage.length > 0 ? "h-[80%]" : "h-[200px]"
+                      }   relative`}
                   >
                     {postImage.length > 0 && (
                       <div className="w-full relative rounded-3xl">

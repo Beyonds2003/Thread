@@ -2,14 +2,12 @@ import { Community } from "@/lib/models/community.model";
 import Thread from "@/lib/models/thread.model";
 import { User } from "@/lib/models/user.model";
 import { connectToDatabase } from "@/lib/mongoose";
-import { NextApiRequest, NextApiResponse } from "next";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request, res: Response) {
   const { pageNumber, pageSize } = await req.json();
-
-  connectToDatabase();
   try {
+    connectToDatabase();
     const skipAmount = (pageNumber - 1) * pageSize;
 
     const getThreads = Thread.find({ parentId: { $in: [null, undefined] } })

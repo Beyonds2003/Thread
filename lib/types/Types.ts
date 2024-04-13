@@ -23,6 +23,7 @@ export type Author = {
   onboarded: boolean;
   threads: [];
   username: string;
+  _id: string
 };
 
 export type Community = {
