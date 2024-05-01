@@ -14,16 +14,13 @@ const fetchThreads = async (pageNumber: number) => {
   return data;
 };
 
-const ThreadList = ({
-  currentUserId,
-}: {
-  currentUserId: string | undefined;
-}) => {
+const ThreadList = ({ currentUserId }: { currentUserId: string | null }) => {
   // Fetching threads
   const {
     data: results,
     isLoading,
     fetchNextPage,
+    isFetching,
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
@@ -49,18 +46,20 @@ const ThreadList = ({
               <div key={i} className="flex flex-col gap-10">
                 {data.threads.map((thread: threadType) => {
                   return (
-                    <ThreadCard
-                      key={thread._id}
-                      id={thread._id}
-                      currentUserId={currentUserId}
-                      parentId={thread.parentId}
-                      content={thread.text}
-                      author={thread.author}
-                      community={thread.community}
-                      createdAt={thread.createdAt}
-                      comments={thread.children}
-                      contentImage={thread.image || ""}
-                    />
+                    <>
+                      <ThreadCard
+                        key={thread._id}
+                        id={thread._id}
+                        currentUserId={currentUserId}
+                        parentId={thread.parentId}
+                        content={thread.text}
+                        author={thread.author}
+                        community={thread.community}
+                        createdAt={thread.createdAt}
+                        comments={thread.children}
+                        contentImage={thread.image || ""}
+                      />
+                    </>
                   );
                 })}
               </div>

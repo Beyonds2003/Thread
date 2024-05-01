@@ -4,7 +4,13 @@ import Link from "next/link";
 import React from "react";
 import { sidebarLinks } from "../../constants/index";
 import { useRouter, usePathname } from "next/navigation";
-import { SignedIn, SignOutButton, useAuth } from "@clerk/nextjs";
+import {
+  SignedIn,
+  SignOutButton,
+  useAuth,
+  SignedOut,
+  SignInButton,
+} from "@clerk/nextjs";
 
 const LeftSideBar = () => {
   const router = useRouter();
@@ -52,8 +58,19 @@ const LeftSideBar = () => {
               alt="logout"
             />
           </SignOutButton>
+          <p className="text-light-1 max-lg:hidden">Logout</p>
         </SignedIn>
-        <p className="text-light-1 max-lg:hidden">Logout</p>
+        <SignedOut>
+          <Link href="/sign-in" className="flex flex-row items-center gap-3">
+            <Image
+              src={"/assets/logout.svg"}
+              width={24}
+              height={24}
+              alt="logout"
+            />
+            <p className="text-light-1 max-lg:hidden">Login</p>
+          </Link>
+        </SignedOut>
       </div>
     </section>
   );

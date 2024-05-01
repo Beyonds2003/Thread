@@ -13,13 +13,13 @@ const Profile = async ({ params }: { params: { id: string } }) => {
   if (!user) return null;
 
   const userInfo = await fetchUser({ userId: params.id });
-  if (!userInfo) return redirect('/onboarding');
+  if (!userInfo) return redirect("/onboarding");
 
   return (
     <section>
       <ProfileHeader
         accountId={userInfo.id}
-        authUserId={user.id}
+        authUserId={userInfo.id}
         name={userInfo.name}
         username={userInfo.username}
         image={userInfo.image}
@@ -53,7 +53,6 @@ const Profile = async ({ params }: { params: { id: string } }) => {
               key={tab.label}
               className="w-full text-light-1"
             >
-              {/* @ts-ignore */}
               <ThreadsTab
                 currentUserId={user.id}
                 accountId={userInfo.id}

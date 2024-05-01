@@ -14,6 +14,31 @@ export type threadType = {
   parentId: string | null;
 };
 
+export type ThreadDetail = {
+  _id: string;
+  text: string;
+  parentId: string | null;
+  author: {
+    name: string;
+    image: string;
+    id: string;
+    _id: string;
+  };
+  community: {
+    _id: string;
+    id: string;
+    name: string;
+    image: string;
+  } | null;
+  createdAt: string;
+  children: {
+    author: {
+      image: string;
+    };
+  }[];
+  image: string;
+};
+
 export type Author = {
   bio: string;
   communities: [] | string[];
@@ -23,7 +48,7 @@ export type Author = {
   onboarded: boolean;
   threads: [];
   username: string;
-  _id: string
+  _id: string;
 };
 
 export type Community = {

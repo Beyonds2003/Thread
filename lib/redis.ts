@@ -1,15 +1,20 @@
-import { createClient } from "redis";
+import Redis from "ioredis";
 
-const redisClient = createClient({
-  password: "Llqz2f9iw8jIVELV0Q4L2Jj3zJbHUXTN",
-  socket: {
-    host: "redis-15253.c292.ap-southeast-1-1.ec2.cloud.redislabs.com",
-    port: 15253,
-  },
-});
+let redisClient: null | Redis = null;
 
-if (!redisClient.isOpen) {
-  redisClient.connect();
-}
+export const connectToRedis = async () => {
+  try {
+    if (redisClient) {
+      console.log("Redis database have been already connected");
+      return redisClient;
+    }
 
-export { redisClient };
+    redisClient = new Redis(`${process.env.REDIS_URL}`, {
+      password: process.env.REDIS_PASS,
+    });
+
+    return redisClient;
+  } catch (error) {
+    console.log(`Error from redis connecting: ${error}`);
+  }
+};

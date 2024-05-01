@@ -6,34 +6,14 @@ import {
   fetchCommunityDetail,
   fetchCommunityPosts,
 } from "@/lib/action/community.action";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { ThreadDetail } from "@/lib/types/Types";
 
 interface Result {
   name: string;
   image: string;
   id: string;
-  threads: {
-    _id: string;
-    text: string;
-    parentId: string | null;
-    author: {
-      name: string;
-      image: string;
-      id: string;
-      _id: string
-    };
-    community: {
-      id: string;
-      name: string;
-      image: string;
-    } | null;
-    createdAt: string;
-    children: {
-      author: {
-        image: string;
-      };
-    }[];
-  }[];
+  _id: string;
+  threads: ThreadDetail[];
 }
 
 interface Props {
@@ -55,30 +35,42 @@ const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
 
   if (!results) redirect("/");
 
+    
+
   return (
     <section className="mt-9 flex flex-col gap-10">
-      {results.threads.map((thread: any) => (
+      {results.threads.map((thread: ThreadDetail, index) => (
         <ThreadCard
-          key={thread.id}
-          id={thread.id}
+          key={index}
+          id={`${thread._id}`}
           currentUserId={accountId}
           parentId={thread.parentId}
           content={thread.text}
           author={
             accountType === "User"
-              ? { name: results.name, image: results.image, id: results.id, _id: accountId }
+              ? {
+                  name: results.name,
+                  image: results.image,
+                  id: results.id,
+                  _id: accountId,
+                }
               : {
                   name: thread.author.name,
                   image: thread.author.image,
                   id: thread.author.id,
-                  _id: accountId
+                  _id: accountId,
                 }
           }
-          community={thread.community}
+          community={thread.community && {
+            id: `${thread.community._id}`,
+            name: thread.community.name,
+            image: thread.community.image,
+            _id: `${thread.community._id}`
+          }}
           createdAt={thread.createdAt}
-          comments={thread.children}
+          comments={thread.children.map(item => ({author: {image: item.author.image}}))}
           contentImage={thread.image || ""}
-        />
+      />
       ))}
     </section>
   );

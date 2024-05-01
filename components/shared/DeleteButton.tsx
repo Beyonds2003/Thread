@@ -3,12 +3,18 @@ import Image from "next/image";
 import React from "react";
 import { Button } from "../ui/button";
 import { deleteThread } from "@/lib/action/thread.action";
+import { useQueryClient } from "@tanstack/react-query";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+
 
 type PropType = {
   threadId: string;
   authorId: string;
   communityId: string | undefined;
-  path: string;
+  currentUserId: string;
+  parentId: string | null;
+  isComment: boolean;
   setDeleted: (deleted: boolean) => void;
   setDeletePending: (deleted: boolean) => void;
 };
@@ -17,17 +23,30 @@ const DeleteButton = ({
   threadId,
   authorId,
   communityId,
-  path,
+  currentUserId,
+  parentId,
+  isComment,
   setDeleted,
   setDeletePending,
 }: PropType) => {
   const [del, setDel] = React.useState<boolean>(false);
+  const queryClient = useQueryClient()
+  const pathname = usePathname()
+  const router = useRouter()
 
   const handleDeleteThread = async () => {
-    setDeletePending(true);
-    deleteThread(threadId, authorId, communityId, path);
-    setDeletePending(false);
-    setDeleted(true);
+    try {
+      setDeletePending(true);
+      await deleteThread(JSON.parse(threadId), pathname);
+      if (!parentId || !isComment) {
+        router.push("/");
+      }
+      await queryClient.invalidateQueries({queryKey: ["threads"]})
+      setDeletePending(false);
+      setDeleted(true);
+    } catch(error) {
+      console.log(error)
+    }
   };
 
   return (

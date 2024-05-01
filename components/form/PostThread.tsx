@@ -123,6 +123,7 @@ const PostThread = ({ userId, userName, userImage }: Props) => {
   const onSubmit = async (values: z.infer<typeof createThreadValidation>) => {
     // Optimistic update
     await queryClient.setQueryData(["threads"], (oldResult: oldResultType) => {
+      console.log(oldResult)
       return {
         pageParams: [1],
         pages: [
@@ -209,8 +210,8 @@ const PostThread = ({ userId, userName, userImage }: Props) => {
                       <div className="w-full relative rounded-3xl">
                         <Image
                           src={field.value}
-                          width={0}
-                          height={0}
+                          width={1200}
+                          height={600}
                           style={{
                             width: "100%",
                             height: "auto",

@@ -23,8 +23,6 @@ const Search = async ({
     sortBy: "desc",
   });
 
-  console.log("search page");
-
   return (
     <section>
       <h1 className="head-text mb-10">Search</h1>
@@ -42,7 +40,7 @@ const Search = async ({
                 id={user.id}
                 username={user.username}
                 name={user.name}
-                image={user.image}
+                imgUrl={user.image}
                 personType={"User"}
               />
             ))}

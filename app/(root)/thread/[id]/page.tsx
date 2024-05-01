@@ -1,14 +1,14 @@
-import ThreadCard from "@/components/card/ThreadCard";
 import Comment from "@/components/form/Comment";
 import { fetchThreadById } from "@/lib/action/thread.action";
 import { fetchUser } from "@/lib/action/user.action";
 import { currentUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import React from "react";
+import ThreadCard from "@/components/card/ThreadCard";
+import { threadType } from "@/lib/types/Types";
 
 const ThreadDetail = async ({ params }: { params: { id: string } }) => {
   const user = await currentUser();
-
   if (!user) return null;
 
   const userInfo = await fetchUser({ userId: user.id });
@@ -21,15 +21,30 @@ const ThreadDetail = async ({ params }: { params: { id: string } }) => {
   return (
     <section className="relative">
       <ThreadCard
-        key={thread.id}
-        id={thread.id}
-        currentUserId={user?.id || ""}
+        id={thread._id}
+        currentUserId={user?.id ?? null}
         parentId={thread.parentId}
         content={thread.text}
-        author={thread.author}
-        community={thread.community}
+        author={{
+          name: thread.author.name,
+          image: thread.author.image,
+          id: thread.author.id,
+          _id: `${thread.author._id}`,
+        }}
+        community={
+          thread.community
+            ? {
+                id: `${thread.community._id}`,
+                name: thread.community.name,
+                image: thread.community.image,
+                _id: `${thread.community._id}`,
+              }
+            : null
+        }
         createdAt={thread.createdAt}
-        comments={thread.children}
+        comments={thread.children.map((child: any) => ({
+          author: { image: child.author.image },
+        }))}
         contentImage={thread.image || ""}
       />
 
@@ -42,18 +57,34 @@ const ThreadDetail = async ({ params }: { params: { id: string } }) => {
       </div>
 
       <div className="mt-10">
-        {thread.children.map((comment: any) => {
+        {thread.children.map((comment: threadType) => {
           return (
             <ThreadCard
-              key={comment.id}
-              id={comment.id}
-              currentUserId={user?.id || ""}
+              key={`${comment._id}`}
+              id={`${comment._id}`}
+              currentUserId={user?.id ?? null}
               parentId={comment.parentId}
               content={comment.text}
-              author={comment.author}
-              community={comment.community}
+              author={{
+                name: comment.author.name,
+                image: comment.author.image,
+                id: comment.author.id,
+                _id: `${comment.author._id}`,
+              }}
+              community={
+                thread.community
+                  ? {
+                      id: `${thread.community._id}`,
+                      name: thread.community.name,
+                      image: thread.community.image,
+                      _id: `${thread.community._id}`,
+                    }
+                  : null
+              }
               createdAt={comment.createdAt}
-              comments={comment.children}
+              comments={comment.children.map((child: any) => ({
+                author: { image: child.author.image },
+              }))}
               isComment={true}
               contentImage={comment.image || ""}
             />

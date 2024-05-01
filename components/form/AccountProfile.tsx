@@ -23,6 +23,8 @@ import { resizeImage, updateUser } from "@/lib/action/user.action";
 import { useRouter, usePathname } from "next/navigation";
 import { type } from "os";
 import { resizeProfile } from "@/lib/file_resizer";
+import { useUser } from "@clerk/nextjs";
+import LoadingSpinner from "../shared/LoadingSpinner";
 
 interface Props {
   user: {
@@ -39,6 +41,8 @@ interface Props {
 const AccountProfile = ({ user, btnTitle }: Props) => {
   const [image, setImage] = React.useState<File[]>([]);
   const { startUpload } = useUploadThing("imageUploader");
+  const [pending, setPending] = React.useState(false);
+  const clerk_user = useUser();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -81,6 +85,8 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
   };
 
   const onSubmit = async (values: z.infer<typeof userValidation>) => {
+    setPending(true);
+
     const blob = values.profile_photo;
 
     let hasImageChange = isBase64Image(blob);
@@ -94,6 +100,10 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
 
       if (imageRes && imageRes[0].fileUrl) {
         values.profile_photo = imageRes[0].fileUrl;
+
+        await clerk_user.user?.setProfileImage({ file: blob });
+
+        console.log("clerk image update");
       }
     }
 
@@ -112,7 +122,10 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
     } else {
       router.push("/");
     }
+    setPending(false);
   };
+
+  console.log("Pending: ", pending);
 
   return (
     <Form {...form}>
@@ -154,7 +167,7 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
                   onChange={(e) => handleImage(e, field.onChange)}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-600" />
             </FormItem>
           )}
         />
@@ -173,7 +186,7 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-600" />
             </FormItem>
           )}
         />
@@ -192,7 +205,7 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-600" />
             </FormItem>
           )}
         />
@@ -211,14 +224,16 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-600" />
             </FormItem>
           )}
         />
         <Button
           className="bg-primary-500 w-full text-base-semibold text-light-2"
           type="submit"
+          disabled={pending}
         >
+          {pending && <LoadingSpinner width={23} height={23} color="white" />}
           Continue
         </Button>
       </form>

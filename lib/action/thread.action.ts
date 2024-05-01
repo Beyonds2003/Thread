@@ -6,6 +6,7 @@ import { User } from "../models/user.model";
 import { connectToDatabase } from "../mongoose";
 import { Community } from "../models/community.model";
 import mongoose from "mongoose";
+import { connectToRedis } from "../redis";
 
 interface Params {
   text: string;
@@ -61,50 +62,94 @@ export async function createThread({
   }
 }
 
-export async function deleteThread(
-  threadId: string,
-  author: string,
-  communityId: string | undefined,
-  path: string,
-) {
-  connectToDatabase();
+async function fetchAllChildThreads(threadId: string): Promise<any[]> {
+  const childThreads = await Thread.find({ parentId: threadId });
 
+  const descendantThreads = [];
+  for (const childThread of childThreads) {
+    const descendants = await fetchAllChildThreads(childThread._id);
+    descendantThreads.push(childThread, ...descendants);
+  }
+
+  return descendantThreads;
+}
+
+export async function deleteThread(id: string, path: string) {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    // Find thread to delete
-    const thread = await Thread.findById(threadId).session(session);
-
-    if (!thread) {
-      throw new Error("Thread not found!!!");
+    connectToDatabase();
+    const redis = await connectToRedis();
+    if (redis === undefined) {
+      return "Failed to connect to Redis";
     }
 
-    // Delte Thred
-    await Thread.deleteOne({ _id: threadId, author }).session(session);
+    // Find the thread to be deleted (the main thread)
+    const mainThread = await Thread.findById(id)
+      .populate("author community")
+      .session(session);
 
-    // Remove threadId from User model arry
-    await User.findByIdAndUpdate(author, {
-      $pull: { threads: threadId },
-    }).session(session);
-
-    // Remove threadId from Community model arry
-    if (communityId) {
-      await Community.findByIdAndUpdate(communityId, {
-        $pull: { threads: threadId },
-      }).session(session);
+    if (!mainThread) {
+      throw new Error("Thread not found");
     }
+
+    // Fetch all child threads and their descendants recursively
+    const descendantThreads = await fetchAllChildThreads(id);
+
+    // Get all descendant thread IDs including the main thread ID and child thread IDs
+    const descendantThreadIds = [
+      id,
+      ...descendantThreads.map((thread) => thread._id),
+    ];
+
+    // Extract the authorIds and communityIds to update User and Community models respectively
+    const uniqueAuthorIds = new Set(
+      [
+        ...descendantThreads.map((thread) => thread.author?._id?.toString()), // Use optional chaining to handle possible undefined values
+        mainThread.author?._id?.toString(),
+      ].filter((id) => id !== undefined)
+    );
+
+    const uniqueCommunityIds = new Set(
+      [
+        ...descendantThreads.map((thread) => thread.community?._id?.toString()), // Use optional chaining to handle possible undefined values
+        mainThread.community?._id?.toString(),
+      ].filter((id) => id !== undefined)
+    );
+
+    // Recursively delete child threads and their descendants
+    await Thread.deleteMany({ _id: { $in: descendantThreadIds } }).session(
+      session
+    );
+
+    // Update User model
+    await User.updateMany(
+      { _id: { $in: Array.from(uniqueAuthorIds) } },
+      { $pull: { threads: { $in: descendantThreadIds } } }
+    ).session(session);
+
+    // Update Community model
+    await Community.updateMany(
+      { _id: { $in: Array.from(uniqueCommunityIds) } },
+      { $pull: { threads: { $in: descendantThreadIds } } }
+    ).session(session);
 
     await session.commitTransaction();
+
+    await redis.del(`thread/${id}`);
+
+    revalidatePath(path);
   } catch (error: any) {
-    throw new Error(`Fail to delete thread ${error.message}`);
+    throw new Error(`Failed to delete thread: ${error.message}`);
   } finally {
-    session.endSession();
+    await session.endSession();
   }
 }
 
 export async function fetchThread(pageNumber = 1, pageSize = 20) {
   connectToDatabase();
+
   try {
     const skipAmount = (pageNumber - 1) * pageSize;
 
@@ -141,7 +186,16 @@ export async function fetchThread(pageNumber = 1, pageSize = 20) {
 
 export async function fetchThreadById(id: string) {
   connectToDatabase();
+  const redis = await connectToRedis();
+  if (redis === undefined) {
+    return "Failed to connect to Redis";
+  }
   try {
+    const data = await redis.getex(`thread/${id}`);
+    if (data !== null) {
+      console.log("Cache hit");
+      return JSON.parse(data);
+    }
     const thread = await Thread.findById(id)
       .populate({
         path: "author",
@@ -166,7 +220,14 @@ export async function fetchThreadById(id: string) {
             },
           },
         ],
+      })
+      .populate({
+        path: "community",
+        model: Community,
+        select: "_id id name image",
       });
+    await redis.setex(`thread/${id}`, 3600, JSON.stringify(thread));
+    console.log("Cache miss");
 
     return thread;
   } catch (error: any) {
@@ -178,10 +239,13 @@ export async function addCommentToThread(
   threadId: string,
   commentText: string,
   userId: string,
-  path: string,
+  path: string
 ) {
   connectToDatabase();
-
+  const redis = await connectToRedis();
+  if (redis === undefined) {
+    return "Failed to connect to Redis";
+  }
   try {
     //Find thread
     const thread = await Thread.findById(threadId);
@@ -199,6 +263,8 @@ export async function addCommentToThread(
     thread.children.push(commentThread._id);
 
     await thread.save();
+
+    await redis.del(`thread/${threadId}`);
 
     revalidatePath(path);
   } catch (error: any) {

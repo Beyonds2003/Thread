@@ -43,7 +43,6 @@ const Comment = ({ threadId, userImage, userId }: Props) => {
       JSON.parse(userId),
       pathname
     );
-
     form.reset();
   };
 
@@ -63,15 +62,17 @@ const Comment = ({ threadId, userImage, userId }: Props) => {
                   className="rounded-full"
                 />
               </FormLabel>
-              <FormControl className="bg-transparent border-none">
-                <Input
-                  type={"text"}
-                  placeholder="Comment..."
-                  className="no-focus text-light-1 outline-none"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
+              <div>
+                <FormControl className="bg-transparent border-none">
+                  <Input
+                    type={"text"}
+                    placeholder="Comment..."
+                    className="no-focus text-light-1 outline-none"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage className="text-red-600 block" />
+              </div>
             </FormItem>
           )}
         />

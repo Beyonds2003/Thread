@@ -22,7 +22,7 @@ const Provider = ({ children }: { children: ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      <ReactQueryDevtools />
+  
     </QueryClientProvider>
   );
 };

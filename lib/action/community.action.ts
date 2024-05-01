@@ -153,9 +153,7 @@ export async function addMemberToCommunity(
   try {
     connectToDatabase();
 
-    const test = await Community.find({});
-
-    console.log("Check me add member", test);
+    console.log("Check me add member", communityId, memberId);
 
     // find the community that want to add
     const community = await Community.findOne({ id: communityId });
@@ -262,13 +260,15 @@ export async function deleteCommunity(communityId: string) {
     console.log("Community Id: ", communityId);
 
     // Delete the community
-    const deleCommunity = await Community.findOneAndDelete({
+    const deleCommunity = await Community.findOne({
       id: communityId,
     });
 
     if (!deleCommunity) {
       throw new Error("Community not found");
     }
+
+    await Community.deleteOne({id: communityId})
 
     // Find the threads that need to delete
     const threads = await Thread.find({ community: deleCommunity._id });

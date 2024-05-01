@@ -64,7 +64,7 @@ const Community = async ({ params }: { params: { id: string } }) => {
                   id={member.id}
                   name={member.name}
                   username={member.username}
-                  image={member.image}
+                  imgUrl={member.image}
                   personType="User"
                 />
               ))}
