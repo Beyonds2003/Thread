@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+pre {
+  white-space: pre-wrap;
+}
+
 @layer components {
   /* main */
   .main-container {

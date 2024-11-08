@@ -74,7 +74,11 @@ async function fetchAllChildThreads(threadId: string): Promise<any[]> {
   return descendantThreads;
 }
 
-export async function deleteThread(id: string, path: string) {
+export async function deleteThread(
+  id: string,
+  path: string,
+  parentId: string | null
+) {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -137,7 +141,10 @@ export async function deleteThread(id: string, path: string) {
 
     await session.commitTransaction();
 
-    await redis.del(`thread/${id}`);
+    Promise.allSettled([
+      redis.del(`thread/${id}`),
+      redis.del(`thread/${parentId}`),
+    ]);
 
     revalidatePath(path);
   } catch (error: any) {

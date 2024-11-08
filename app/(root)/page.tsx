@@ -1,4 +1,3 @@
-import Test from "@/components/shared/Test";
 import ThreadList from "@/components/shared/ThreadList";
 import { fetchUser } from "@/lib/action/user.action";
 import { Author } from "@/lib/types/Types";
@@ -17,7 +16,7 @@ export default async function Home() {
   return (
     <div>
       <h1 className="head-text text-left">Home</h1>
-      <ThreadList currentUserId={user?._id ?? null} />
+      <ThreadList currentUserId={userInfo?.id ?? null} />
     </div>
   );
 }

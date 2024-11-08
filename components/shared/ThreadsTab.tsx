@@ -35,15 +35,13 @@ const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
 
   if (!results) redirect("/");
 
-    
-
   return (
     <section className="mt-9 flex flex-col gap-10">
       {results.threads.map((thread: ThreadDetail, index) => (
         <ThreadCard
           key={index}
           id={`${thread._id}`}
-          currentUserId={accountId}
+          currentUserId={currentUserId}
           parentId={thread.parentId}
           content={thread.text}
           author={
@@ -61,16 +59,20 @@ const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
                   _id: accountId,
                 }
           }
-          community={thread.community && {
-            id: `${thread.community._id}`,
-            name: thread.community.name,
-            image: thread.community.image,
-            _id: `${thread.community._id}`
-          }}
+          community={
+            thread.community && {
+              id: `${thread.community._id}`,
+              name: thread.community.name,
+              image: thread.community.image,
+              _id: `${thread.community._id}`,
+            }
+          }
           createdAt={thread.createdAt}
-          comments={thread.children.map(item => ({author: {image: item.author.image}}))}
+          comments={thread.children.map((item) => ({
+            author: { image: item.author.image },
+          }))}
           contentImage={thread.image || ""}
-      />
+        />
       ))}
     </section>
   );

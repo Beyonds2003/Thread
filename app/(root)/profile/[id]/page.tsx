@@ -19,7 +19,7 @@ const Profile = async ({ params }: { params: { id: string } }) => {
     <section>
       <ProfileHeader
         accountId={userInfo.id}
-        authUserId={userInfo.id}
+        authUserId={user.id}
         name={userInfo.name}
         username={userInfo.username}
         image={userInfo.image}

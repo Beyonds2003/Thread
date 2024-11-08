@@ -3,6 +3,7 @@ import { currentUser } from "@clerk/nextjs";
 import UserCard from "../card/UserCard";
 import { fetchUsers } from "@/lib/action/user.action";
 import { fetchCommunities } from "@/lib/action/community.action";
+import { Suspense } from "react";
 
 async function RightSidebar() {
   const user = await currentUser();

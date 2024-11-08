@@ -5,7 +5,7 @@ import Link from "next/link";
 import React from "react";
 import DeleteButton from "../shared/DeleteButton";
 import LoadingSpinner from "../shared/LoadingSpinner";
-// import { Dialog, DialogContent } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 
 interface Props {
   id: string;
@@ -48,9 +48,7 @@ const ThreadCard = ({
 }: Props) => {
   const [deleted, setDeleted] = React.useState<boolean>(false);
   const [deletePending, setDeletePending] = React.useState<boolean>(false);
-  const [isImageModalOpen, setImageModalOpen] = React.useState<boolean>(false);
 
-  const toggleImageModal = () => setImageModalOpen(!isImageModalOpen);
   return (
     <>
       {!deleted && (
@@ -71,22 +69,8 @@ const ThreadCard = ({
                     alt="profile image"
                     fill
                     className="cursor-pointer rounded-full"
-                    onClick={toggleImageModal}
                   />
                 </Link>
-                                {/* Modal for image
-                                {isImageModalOpen && (
-                  <Dialog>
-                    <DialogContent>
-                    <Image
-                      src={author.image}
-                      alt="Expanded profile image"
-                      layout="fill"
-                      objectFit="contain"
-                    />
-                    </DialogContent>
-                  </Dialog>
-                )} */}
 
                 <div className="thread-card_bar"></div>
               </div>
@@ -98,19 +82,32 @@ const ThreadCard = ({
                   </h4>
                 </Link>
 
-                <p className="mt-2 text-small-regular text-light-2 w-full text-break overflow-hidden ">
+                <pre className="mt-2 text-small-regular text-light-2 w-full ">
                   {content}
-                </p>
+                </pre>
 
                 {contentImage !== "" && (
-                  <Image
-                    src={contentImage}
-                    alt="content image"
-                    width="0"
-                    height="0"
-                    sizes="100vw"
-                    className="mt-5 object-contain rounded-xl border-gray-800 border-[0.1px] w-auto  h-auto min-w-[250px] min-h-[150px] max-h-[489px]"
-                  />
+                  <Dialog>
+                    <DialogTrigger>
+                      <Image
+                        src={contentImage}
+                        alt="content image"
+                        width="0"
+                        height="0"
+                        sizes="100vw"
+                        className="mt-5 object-contain rounded-xl border-gray-800 border-[0.1px] w-auto  h-auto min-w-[250px] min-h-[150px] max-h-[489px]"
+                      />
+                    </DialogTrigger>
+                    <DialogContent className="border-none text-white w-[100%] h-[100%] max-w-[100%] max-h-[100%] flex justify-center items-center">
+                      <Image
+                        src={contentImage}
+                        alt="content image"
+                        width={1200}
+                        height={600}
+                        className="object-contain rounded-xl max-w-full max-h-full"
+                      />
+                    </DialogContent>
+                  </Dialog>
                 )}
 
                 <div
@@ -162,18 +159,17 @@ const ThreadCard = ({
                 </div>
               </div>
             </div>
-            {currentUserId === author._id && !deletePending && (
-              <DeleteButton
-                setDeleted={setDeleted}
-                setDeletePending={setDeletePending}
-                threadId={JSON.stringify(id)}
-                currentUserId={currentUserId}
-                authorId={author.id}
-                parentId={parentId}
-                isComment={isComment}
-                communityId={community ? community.id : undefined}
-              />
-            )}
+            <DeleteButton
+              setDeleted={setDeleted}
+              setDeletePending={setDeletePending}
+              threadId={JSON.stringify(id)}
+              currentUserId={currentUserId}
+              authorId={author.id}
+              parentId={parentId}
+              isComment={isComment}
+              communityId={community ? community.id : undefined}
+            />
+
             {(id === undefined || deletePending) && (
               <LoadingSpinner width={28} height={28} color="white" />
             )}

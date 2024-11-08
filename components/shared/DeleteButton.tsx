@@ -7,12 +7,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 
-
 type PropType = {
   threadId: string;
   authorId: string;
   communityId: string | undefined;
-  currentUserId: string;
+  currentUserId: string | null;
   parentId: string | null;
   isComment: boolean;
   setDeleted: (deleted: boolean) => void;
@@ -30,22 +29,24 @@ const DeleteButton = ({
   setDeletePending,
 }: PropType) => {
   const [del, setDel] = React.useState<boolean>(false);
-  const queryClient = useQueryClient()
-  const pathname = usePathname()
-  const router = useRouter()
+  const queryClient = useQueryClient();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  if (currentUserId !== authorId) return null;
 
   const handleDeleteThread = async () => {
     try {
       setDeletePending(true);
-      await deleteThread(JSON.parse(threadId), pathname);
+      await deleteThread(JSON.parse(threadId), pathname, parentId);
       if (!parentId || !isComment) {
         router.push("/");
       }
-      await queryClient.invalidateQueries({queryKey: ["threads"]})
+      await queryClient.invalidateQueries({ queryKey: ["threads"] });
       setDeletePending(false);
       setDeleted(true);
-    } catch(error) {
-      console.log(error)
+    } catch (error) {
+      console.log(error);
     }
   };
 

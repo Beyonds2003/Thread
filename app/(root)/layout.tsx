@@ -1,14 +1,16 @@
 import "../globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+// import { Inter } from "next/font/google";
 import TopBar from "@/components/shared/TopBar";
 import LeftSideBar from "@/components/shared/LeftSideBar";
 import RightSideBar from "@/components/shared/RightSideBar";
 import BottomBar from "@/components/shared/BottomBar";
 import { ClerkProvider } from "@clerk/nextjs";
 import Provider from "@/lib/Provider";
+import { Suspense } from "react";
+import RightSideBarLoading from "@/components/loading/RightSideBarLoading";
 
-const inter = Inter({ subsets: ["latin"] });
+// const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -23,7 +25,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${inter.className}`}>
+        <body className={""}>
           <TopBar />
 
           <main className="flex flex-row">
@@ -31,11 +33,15 @@ export default function RootLayout({
 
             <section className="main-container">
               <div className="w-full max-w-4xl">
-                <Provider>{children}</Provider>
+                <Provider>
+                  <Suspense fallback={null}>{children}</Suspense>
+                </Provider>
               </div>
             </section>
 
-            <RightSideBar />
+            <Suspense fallback={<RightSideBarLoading />}>
+              <RightSideBar />
+            </Suspense>
           </main>
 
           <BottomBar />
