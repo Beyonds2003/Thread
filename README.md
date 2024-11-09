@@ -52,6 +52,11 @@ The application architecture is designed for scalability and flexibility, using 
 - Zod
 - TypeScript
 
+## <a name="system-design">💻 System Design</a>
+
+<br/>
+<img src="./public/assets/thread-system-design.png" alt="system design" sytle="max-width: 100%; height: auto;" />
+
 ## <a name="features">🔋 Features</a>
 
 👉 **Authentication**: Authentication using Clerk for email, password, and social logins (Google and GitHub) with a comprehensive profile management system.

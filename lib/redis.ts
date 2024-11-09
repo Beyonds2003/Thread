@@ -9,8 +9,6 @@ export const connectToRedis = async () => {
       return redisClient;
     }
 
-    console.log("Redis ENV", process.env.REDIS_URL, "password: ", process.env.REDIS_PASS);
-
     redisClient = new Redis(`${process.env.REDIS_URL}`, {
       password: process.env.REDIS_PASS,
     });
