@@ -18,7 +18,6 @@ function UserCard({ id, name, username, imgUrl, personType }: Props) {
 
   const isCommunity = personType === "Community";
 
-  console.log();
   return (
     <article className="user-card">
       <div className="user-card_avatar">
